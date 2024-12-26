@@ -4,15 +4,16 @@ import random
 def guess_the_number():
     print("Добро пожаловать в игру 'Угадай число'!")
 
-    # Запрашиваем у пользователя диапазон чисел
-    try:
-        lower_bound = int(input("Введите нижнюю границу диапазона: "))
-        upper_bound = int(input("Введите верхнюю границу диапазона: "))
-        if lower_bound >= upper_bound:
-            print("Некорректный диапазон. Устанавливаем стандартный (1–100).")
-            lower_bound, upper_bound = 1, 100
-    except ValueError:
-        print("Введено некорректное значение. Устанавливаем стандартный диапазон (1–100).")
+    # Выбор уровня сложности
+    difficulty = input("Выберите уровень сложности (легкий, средний, сложный): ").strip().lower()
+    if difficulty == "легкий":
+        lower_bound, upper_bound = 1, 10
+    elif difficulty == "средний":
+        lower_bound, upper_bound = 1, 50
+    elif difficulty == "сложный":
+        lower_bound, upper_bound = 1, 100
+    else:
+        print("Некорректный выбор. Устанавливаем стандартный уровень сложности (1–100).")
         lower_bound, upper_bound = 1, 100
 
     # Инициализация статистики
