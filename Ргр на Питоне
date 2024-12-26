@@ -1,0 +1,109 @@
+from google.colab import files
+uploaded = files.upload()
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+losses=[]
+
+
+
+# Загрузка данных
+data = pd.read_excel('cars.xlsx')
+print(data.columns)
+x = data['Mileage'].values
+y = data['Price'].values
+
+# Загружаем данные из файла cars.csv. Извлекаем столбцы "пробег" (x) и "цена" (y) в виде массивов numpy.
+
+# Стандартизация данных
+x_mean = np.mean(x)
+x_std = np.std(x)
+y_mean = np.mean(y)
+y_std = np.std(y)
+
+x = (x - x_mean) / x_std
+y = (y - y_mean) / y_std
+# Приводим данные к единому масштабу (нормализуем), чтобы среднее значение было равно 0, а стандартное отклонение равно 1. Это делается для ускорения и стабилизации обучения.
+
+
+# Гиперпараметры
+learning_rate = 0.01
+momentum = 0.9
+epochs = 100
+# Определяем гиперпараметры:
+# learning_rate — скорость обучения.
+# momentum — коэффициент импульса.
+# epochs — количество эпох обучения.
+# Инициализация параметров
+
+k1 = np.random.randn()
+k2 = np.random.randn()
+b = np.random.randn()
+vk1 = 0
+vk2 = 0
+vb = 0
+# Инициализируем параметры модели (коэффициенты квадратичной функции) случайными значениями. Также инициализируем скорости для каждого параметра нулями.
+
+# Функция потерь
+def loss(y, y_pred):
+    return np.mean((y - y_pred) ** 2)
+# Определяем функцию потерь (среднеквадратическую ошибку), которая вычисляет среднее значение квадратов разности между реальными значениями y и предсказанными значениями y_pred.
+
+
+# Градиенты
+def gradients(x, y, k1, k2, b):
+    y_pred = k1 * x**2 + k2 * x + b
+    grad_k1 = -2 * np.mean((y - y_pred) * x**2)
+    grad_k2 = -2 * np.mean((y - y_pred) * x)
+    grad_b = -2 * np.mean(y - y_pred)
+    return grad_k1, grad_k2, grad_b
+# Определяем функцию для вычисления градиентов функции потерь по параметрам k1k1k1, k2k2k2 и bbb.
+
+# Обучение
+for epoch in range(epochs):
+    # Точка предсказания
+    lookahead_k1 = k1 - momentum * vk1
+    lookahead_k2 = k2 - momentum * vk2
+    lookahead_b = b - momentum * vb
+
+    # Вычисляем градиенты в точке предсказания
+    grad_k1, grad_k2, grad_b = gradients(x, y, lookahead_k1, lookahead_k2, lookahead_b)
+
+    # Обновляем скорости
+    vk1 = momentum * vk1 + learning_rate * grad_k1
+    vk2 = momentum * vk2 + learning_rate * grad_k2
+    vb = momentum * vb + learning_rate * grad_b
+
+    # Обновляем параметры
+    k1 -= vk1
+    k2 -= vk2
+    b -= vb
+
+    # Вычисляем текущую ошибку
+    y_pred = k1 * x**2 + k2 * x + b
+    current_loss = loss(y, y_pred)
+    losses.append(current_loss)
+    if epoch % 100 == 0:
+        print(f'Epoch {epoch}: Loss = {current_loss}')
+
+print(f'Final coefficients: k1 = {k1}, k2 = {k2}, b = {b}')
+
+
+# Построение графика функции потерь
+plt.scatter(range(len(losses)), losses, marker='o')
+plt.xlabel('Эпохи')
+plt.ylabel('Значение функции потерь')
+plt.title('График функции потерь')
+plt.show()
+
+# Построение графика предсказанных значений и реальных значений
+plt.scatter(x, y, color='blue', label='Актуальные цены')
+plt.scatter(x, k1*x**2 + k2*x + b, color='red', label='Предсказанные цены')
+plt.xlabel('Пробег')
+plt.ylabel('')
+plt.title('Предсказанные против актуальных цены')
+plt.legend()
+plt.show()
+
+print("Коэффициенты для прогнозирования цены автомобиля методом nesterov momentum градиентного спуска")
